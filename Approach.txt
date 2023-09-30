@@ -1,0 +1,29 @@
+
+I will be explaining my approach in a series of steps:
+
+1. Feature Engineering:
+Most of the feature engineering steps done is common and shared between          both the tasks: 
+	(a). Removal of stopwords from the KEYWORDS column and  changing them into  a lower-case format.
+	(b). Tokenizing the keywords and creating a corpus of words for further modelling purpose.
+	(c). The data was also checked for more erroneous constructs in the keyword column but none were found and after this step our 	vocabulary contained about 1500 unique words.
+	(d). To further increase our vocabulary of words we also used the url column from which we extracted the various WEBSITE names 	and used that as categorical feature. And the rest of the url was checked for more significant words in the url path and upon 	discovery of such words they were added bringing our total corpus to have about 8000 unique words.
+	(e). Columns like DEVICETYPE, PLATFORMTYPE, and the WEBSITE names we derived in the previous steps were converted into 	categorical features with the help of Label Encoder and used in our dataset.
+	(f). Another column that we tried to use was the BIDREQUESTIP column for both the USERCITY column and the USERZIPCODE colum had 	null data. So in this step we tried to use the ipdata api to fetch the cities for the given IPS which had missing cities. 
+
+2. Eliminating imbalance:
+
+	(a) For the binary classification problem of whether a person is a health care professional or not a class imbalance was seen. 	With 79,756 people belonging to non-HCP class and  only 34,180 people belonging to HCP class, which 	could potentially create a bias problem for our machine learning models.To solve that SMOTE was used to oversample the minority HCP class to 79,756 rows and 	also increased the model performance.
+ 	
+	(b)Now for the taxonomy classification problem there were more than 144 classes out of 207  classes  that had less than 10 	samples some even having just one while the dominant classes ranged from 800 to 7000 samples per 	class, so yet again an 	oversampling strategy was used where any class that had less than a 100 samples were oversampled to have 100 samples  using 	random over sampler. 
+	
+	(c) An obvious observation made about the problem is that only HCP people have a taxonomy assigned to them but again even among 	them some didn’t have a taxonomy which gave rise to a new MISSING class.
+
+3. Modelling:
+
+	(a).The first step to our modelling was to finalize our word embeddings, vectorization techniques such as tfidf were used but again produced high dimensionality and captured less contextual information, embeddings like fasttext, 	word2vec and bert embeddings were used and the most optimal result were given by ‘all-MiniLM-L6-v2’ model encodings  from hugging face hub .
+
+	Base model (for which) can be  found here : https://huggingface.co/nreimers/MiniLM-L6-H384-uncased 
+	
+	(b).Our final word embeddings were of size 384 dims and were concatenated with our 4 categorical features of PLATFORM_ID,DEVICETYPE,PLATFORMTYPE and WEBSITE. Our training data frame looked something had a shape of (159512x 388).
+	
+	(c). For modelling many models and ensemble of models were used and the best result submitted was given by base Random Forest i.e. 99.79% on test data.
